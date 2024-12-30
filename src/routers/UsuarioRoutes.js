@@ -3,6 +3,9 @@ import { login, solicitarCambioPassword, cambiarPassword } from '../controllers/
 
 const router = express.Router();
 
+
+
+
 router.post('/login', login);
 router.post('/solicitar-cambio-password', solicitarCambioPassword); 
 router.post('/cambiar-password', cambiarPassword);

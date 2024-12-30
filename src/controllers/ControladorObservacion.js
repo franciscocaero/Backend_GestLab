@@ -1,18 +1,22 @@
 import Observacion from '../models/Observacion.js';
 
 export const crearObservacion = async (req, res) => {
-  try {
-    const { solicitudId, explicacion } = req.body;
-    const { _id: autor, rol } = req.usuario;
+  const { solicitudId, explicacion } = req.body;
 
-    const nuevaObservacion = await Observacion.create({
+  if (!req.usuario || !req.usuario.id) {
+    return res.status(403).json({ message: 'No estás autorizado para crear una observación.' });
+  }
+
+  try {
+
+    const nuevaObservacion = new Observacion({
       solicitud: solicitudId,
-      autor,
-      rol,
+      autor: req.usuario.id, 
       explicacion,
     });
 
-    res.status(201).json(nuevaObservacion);
+    const observacionGuardada = await nuevaObservacion.save();
+    res.status(201).json(observacionGuardada);
   } catch (error) {
     console.error('Error al crear observación:', error);
     res.status(500).json({ message: 'Error al crear la observación' });

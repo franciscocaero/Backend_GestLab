@@ -46,15 +46,15 @@ export const eliminarUsuario = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const usuario = await Usuario.findById(id);
+    const usuario = await Usuario.findByIdAndDelete(id);
     if (!usuario) {
       return res.status(404).json({ message: 'Usuario no encontrado.' });
     }
 
-    await usuario.remove();
     res.json({ message: 'Usuario eliminado exitosamente.' });
   } catch (error) {
     console.error('Error al eliminar usuario:', error);
     res.status(500).json({ message: 'Error al eliminar usuario.', error: error.message });
   }
 };
+

@@ -17,7 +17,7 @@ export const crearSolicitudSoporte = async (req, res) => {
       descripcion,
       laboratorio,
       equipo,
-      creadoPor: req.usuario.id, 
+      creadoPor: req.usuario.id,
     });
 
     const solicitudGuardada = await nuevaSolicitud.save();
@@ -56,7 +56,7 @@ export const cambiarEstadoSolicitud = async (req, res) => {
 
 export const verHistorialSolicitudes = async (req, res) => {
   try {
-    const { id: userId, rol } = req.usuario; 
+    const { id: userId, rol } = req.usuario;
 
     let solicitudes;
 
@@ -104,15 +104,14 @@ export const filtrarSolicitudes = async (req, res) => {
         return res.status(404).json({ message: 'No se encontraron usuarios con el nombre proporcionado.' });
       }
     }
-    
 
     const solicitudes = await SolicitudSoporte.find(query)
-      .populate('laboratorio', 'codigo descripcion') 
-      .populate('creadoPor', 'nombre email'); 
+      .populate('laboratorio', 'codigo descripcion')
+      .populate('creadoPor', 'nombre email');
+
     if (solicitudes.length === 0) {
       return res.status(404).json({ message: 'No se encontraron solicitudes con los filtros proporcionados.' });
     }
-
 
     res.json({
       message: 'Solicitudes filtradas exitosamente.',
@@ -124,18 +123,44 @@ export const filtrarSolicitudes = async (req, res) => {
   }
 };
 
-export const consultaTemporal = async (req, res) => {
+export const asignarSolicitud = async (req, res) => {
   try {
-    db.usuarios.find({}, { nombre: 1, _id: 1 })
-      .then((result) => {
-        res.json(result);
-      })
-      .catch((error) => {
-        console.error('Error al realizar la consulta:', error);
-        res.status(500).json({ message: 'Error al realizar la consulta' });
-      });
+    if (req.usuario.rol !== 'Administrador') {
+      return res.status(403).json({ error: 'No tienes permiso para realizar esta acción' });
+    }
+
+    const { solicitudId, usuarioId } = req.body;
+
+    const usuario = await Usuario.findById(usuarioId);
+    if (!usuario) {
+      return res.status(404).json({ error: 'Usuario no encontrado' });
+    }
+
+    const solicitud = await SolicitudSoporte.findByIdAndUpdate(
+      solicitudId,
+      { asignadoA: usuarioId },
+      { new: true }
+    );
+    if (!solicitud) {
+      return res.status(404).json({ error: 'Solicitud no encontrada' });
+    }
+
+    res.status(200).json({ message: 'Solicitud asignada correctamente', solicitud });
   } catch (error) {
-    console.error('Error al realizar la consulta:', error); 
-    res.status(500).json({ message: 'Error al realizar la consulta' });
+    console.error('Error al asignar la solicitud:', error);
+    res.status(500).json({ error: 'Error al asignar la solicitud' });
   }
-}
+};
+
+export const obtenerSolicitudesAsignadas = async (req, res) => {
+  try {
+    const usuarioId = req.usuario.id;
+
+    const solicitudes = await SolicitudSoporte.find({ asignadoA: usuarioId })
+      .populate('laboratorio', 'codigo descripcion');
+    res.status(200).json(solicitudes);
+  } catch (error) {
+    console.error('Error al obtener las solicitudes asignadas:', error);
+    res.status(500).json({ error: 'Error al obtener las solicitudes asignadas' });
+  }
+};

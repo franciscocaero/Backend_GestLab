@@ -30,6 +30,11 @@ const solicitudSoporteSchema = new mongoose.Schema({
     ref: 'Usuario',
     required: true,
   },
+  asignadoA: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Usuario', 
+    default: null,  
+  },
 }, {
   timestamps: true,
 });
@@ -38,6 +43,11 @@ const solicitudSoporteSchema = new mongoose.Schema({
 solicitudSoporteSchema.pre('save', async function (next) {
   const Laboratorio = mongoose.model('Laboratorio');
   const laboratorio = await Laboratorio.findById(this.laboratorio);
+
+  if (!laboratorio) {
+    const error = new Error(`El laboratorio con ID (${this.laboratorio}) no existe.`);
+    return next(error);
+  }
 
   if (this.equipo > laboratorio.numComputadoras) {
     const error = new Error(`El equipo seleccionado (${this.equipo}) excede el número total de computadoras (${laboratorio.numComputadoras}) del laboratorio.`);

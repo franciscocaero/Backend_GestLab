@@ -1,0 +1,566 @@
+openapi: 3.0.3
+info:
+  title: 'API de Soporte de Laboratorios'
+  version: '1.0.0'
+  description: 'Documentación de la API para gestionar solicitudes de soporte y laboratorios'
+
+servers:
+  - url: http://localhost:3000
+  - url: https://backend-gestlab.onrender.com
+
+tags:
+  - name: LabInsight
+    description: Gestión de Solicitudes de Soporte en Laboratorios de la Esfot
+  - name: Usuarios
+    description: API para gestión de usuarios
+  - name: Laboratorios
+    description: API para gestión de laboratorios
+  - name: Solicitudes
+    description: API para gestión de solicitudes de soporte
+  - name: Observaciones
+    description: API para gestión de observaciones sobre solicitudes
+  - name: Notas
+    description: API para gestión de notas sobre solicitudes
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Usuario:
+      type: object
+      properties:
+        nombre:
+          type: string
+          example: 'Juan'
+        apellido:
+          type: string
+          example: 'Lopez'
+        email:
+          type: string
+          example: 'user@gmail.com'
+        password:
+          type: string
+          example: 'password123'
+        rol:
+          type: string
+          enum: ['Administrador', 'PersonalTICs', 'Docente', 'AyudanteServicios', 'Pasante']
+          example: 'Administrador'
+
+    Laboratorio:
+      type: object
+      properties:
+        codigo:
+          type: string
+          example: 'LAB001'
+        descripcion:
+          type: string
+          example: 'Laboratorio de TICs'
+        numeroComputadoras:
+          type: integer
+          example: 20
+        numeroProyectores:
+          type: integer
+          default: 1
+          example: 2
+
+    Solicitud:
+      type: object
+      properties:
+        titulo:
+          type: string
+          example: 'Problema con el computador'
+        descripcion:
+          type: string
+          example: 'El computador no enciende.'
+        laboratorio:
+          type: string
+          example: '610c4c633c12de3fd4b78595'
+        equipo:
+          type: integer
+          example: 2
+
+    Nota:
+      type: object
+      properties:
+        solicitudId:
+          type: string
+          example: '610c4c633c12de3fd4b78595'
+        mensaje:
+          type: string
+          example: 'Esta solicitud necesita atención urgente.'
+
+    Observacion:
+      type: object
+      properties:
+        solicitudId:
+          type: string
+          example: '610c4c633c12de3fd4b78595'
+        explicacion:
+          type: string
+          example: 'Se requiere que se realice un diagnóstico más profundo.'
+
+  responses:
+    NotFound:
+      description: "Recurso no encontrado."
+
+paths:
+  /api/usuarios/login:
+    post:
+      summary: Inicia sesión del usuario.
+      tags: [Usuarios]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: user@example.com
+                password:
+                  type: string
+                  example: password123
+      responses:
+        200:
+          description: Login exitoso.
+        404:
+          $ref: '#/components/responses/NotFound'
+        401:
+          description: Contraseña incorrecta.
+          
+  /api/usuarios/solicitar-cambio-password:
+    post:
+      summary: Solicita cambio de contraseña.
+      tags: [Usuarios]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: user@example.com
+      responses:
+        200:
+          description: Código de verificación enviado.
+        404:
+          $ref: '#/components/responses/NotFound'
+  
+  /api/usuarios/cambiar-password:
+    post:
+      summary: Cambia la contraseña del usuario.
+      tags: [Usuarios]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: user@example.com
+                verificationCode:
+                  type: string
+                  example: abc123
+                nuevaContraseña:
+                  type: string
+                  example: newpassword123
+                confirmarContraseña:
+                  type: string
+                  example: newpassword123
+      responses:
+        200:
+          description: Contraseña actualizada exitosamente.
+        404:
+          $ref: '#/components/responses/NotFound'
+        401:
+          description: Código de verificación incorrecto.
+
+  /api/laboratorios:
+    post:
+      summary: Crea un nuevo laboratorio.
+      tags: [Laboratorios]
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Laboratorio'
+      responses:
+        201:
+          description: Laboratorio creado exitosamente.
+        500:
+          description: Error al crear laboratorio.
+  
+    get:
+      summary: Lista todos los laboratorios.
+      tags: [Laboratorios]
+      security:
+        - BearerAuth: []
+      responses:
+        200:
+          description: Listado de laboratorios.
+        500:
+          description: Error al listar laboratorios.
+  
+  /api/laboratorios/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: ID del laboratorio a actualizar.
+        schema:
+          type: string
+
+    put:
+      summary: Actualiza un laboratorio existente.
+      tags: [Laboratorios]
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Laboratorio'
+      responses:
+        200:
+          description: Laboratorio actualizado exitosamente.
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          description: Error al actualizar laboratorio.
+  
+    delete:
+      summary: Elimina un laboratorio existente.
+      tags: [Laboratorios]
+      security:
+        - BearerAuth: []
+      responses:
+        200:
+          description: Laboratorio eliminado exitosamente.
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          description: Error al eliminar laboratorio.
+
+  /api/soporte/:
+    post:
+      summary: Crea una nueva solicitud de soporte.
+      tags: [Solicitudes]
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Solicitud'
+      responses:
+        201:
+          description: Solicitud de soporte creada exitosamente.
+        404:
+          description: Laboratorio no encontrado.
+        500:
+          description: Error al crear la solicitud de soporte.
+
+  /api/soporte/{id}/estado:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: ID de la solicitud a actualizar.
+        schema:
+          type: string
+
+    patch:
+      summary: Cambia el estado de una solicitud de soporte.
+      tags: [Solicitudes]
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                estado:
+                  type: string
+                  enum: [Pendiente, Encargada, Atendida, Completada]
+                  example: 'Atendida'
+      responses:
+        200:
+          description: Estado de la solicitud actualizado exitosamente.
+        400:
+          description: Estado inválido.
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          description: Error al cambiar el estado de la solicitud.
+
+  /api/soporte/historial:
+    get:
+      summary: Obtiene el historial de solicitudes de soporte.
+      tags: [Solicitudes]
+      security:
+        - BearerAuth: []
+      responses:
+        200:
+          description: Historial de solicitudes recuperado exitosamente.
+        500:
+          description: Error al recuperar el historial.
+
+  /api/soporte/filtrar:
+    get:
+      summary: Filtra las solicitudes de soporte por laboratorio y usuario.
+      tags: [Solicitudes]
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: codigoLaboratorio
+          in: query
+          description: Código del laboratorio para filtrar las solicitudes.
+          required: false
+          schema:
+            type: string
+        - name: nombreUsuario
+          in: query
+          description: Nombre del usuario para filtrar las solicitudes.
+          required: false
+          schema:
+            type: string
+      responses:
+        200:
+          description: Solicitudes filtradas exitosamente.
+        404:
+          description: No se encontraron solicitudes con los filtros proporcionados.
+        500:
+          description: Error al filtrar solicitudes.
+
+  /api/soporte/asignar:
+    post:
+      summary: Asigna una solicitud a un usuario.
+      tags: [Solicitudes]
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                solicitudId:
+                  type: string
+                  example: '610c4c633c12de3fd4b78595'
+                usuarioId:
+                  type: string
+                  example: '610c4c633c12de3fd4b78600'
+      responses:
+        200:
+          description: Solicitud asignada correctamente.
+        404:
+          $ref: '#/components/responses/NotFound'
+        403:
+          description: No tienes permiso para realizar esta acción.
+        500:
+          description: Error al asignar la solicitud.
+
+  /api/soporte/asignadas:
+    get:
+      summary: Obtiene las solicitudes asignadas a un usuario.
+      tags: [Solicitudes]
+      security:
+        - BearerAuth: []
+      responses:
+        200:
+          description: Solicitudes asignadas recuperadas exitosamente.
+        500:
+          description: Error al obtener las solicitudes asignadas. 
+          
+  /api/observaciones/:
+    post:
+      summary: Crea una nueva observación sobre una solicitud.
+      tags: [Observaciones]
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Observacion'
+      responses:
+        201:
+          description: Observación creada exitosamente.
+        404:
+          description: Solicitud no encontrada.
+        500:
+          description: Error al crear la observación.
+
+  /api/observaciones/{solicitudId}:
+    parameters:
+      - name: solicitudId
+        in: path
+        required: true
+        description: ID de la solicitud cuyos comentarios deseas listar.
+        schema:
+          type: string
+
+    get:
+      summary: Lista todas las observaciones de una solicitud.
+      tags: [Observaciones]
+      security:
+        - BearerAuth: []
+      responses:
+        200:
+          description: Observaciones listadas exitosamente.
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          description: Error al listar las observaciones.
+
+  /api/observaciones/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: ID de la observación a eliminar.
+        schema:
+          type: string
+
+    delete:
+      summary: Elimina una observación existente.
+      tags: [Observaciones]
+      security:
+        - BearerAuth: []
+      responses:
+        200:
+          description: Observación eliminada exitosamente.
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          description: Error al eliminar la observación.
+          
+  /api/notas/:
+    post:
+      summary: Crea una nueva nota sobre una solicitud.
+      tags: [Notas]
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Nota'
+      responses:
+        201:
+          description: Nota creada exitosamente.
+        404:
+          description: Solicitud no encontrada.
+        500:
+          description: Error al crear la nota.
+
+  /api/notas/{solicitudId}:
+    parameters:
+      - name: solicitudId
+        in: path
+        required: true
+        description: ID de la solicitud cuyas notas deseas listar.
+        schema:
+          type: string
+
+    get:
+      summary: Lista todas las notas de una solicitud.
+      tags: [Notas]
+      security:
+        - BearerAuth: []
+      responses:
+        200:
+          description: Notas listadas exitosamente.
+        404:
+          description: No se encontraron notas para la solicitud.
+        500:
+          description: Error al listar las notas.
+
+  /api/notas/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: ID de la nota a eliminar.
+        schema:
+          type: string
+
+    delete:
+      summary: Elimina una nota existente.
+      tags: [Notas]
+      security:
+        - BearerAuth: []
+      responses:
+        200:
+          description: Nota eliminada exitosamente.
+        404:
+          description: Nota no encontrada.
+        500:
+          description: Error al eliminar la nota.
+
+  /api/gestion/crear:
+    post:
+      summary: Crea nuevos usuarios.
+      tags: [Usuarios]
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                usuarios:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Usuario'
+      responses:
+        201:
+          description: Proceso de creación de usuarios completado.
+        400:
+          description: Lista de usuarios inválida.
+        500:
+          description: Error al crear usuarios.
+
+
+  /api/gestion/eliminar/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: ID del usuario a eliminar.
+        schema:
+          type: string
+
+    delete:
+      summary: Elimina un usuario existente.
+      tags: [Usuarios]
+      security:
+        - BearerAuth: []
+      responses:
+        200:
+          description: Usuario eliminado exitosamente.
+        404:
+          $ref: '#/components/responses/NotFound'
+        500:
+          description: Error al eliminar usuario.
+          

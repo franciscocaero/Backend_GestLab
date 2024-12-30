@@ -7,14 +7,9 @@ const observacionSchema = new mongoose.Schema(
       ref: 'SolicitudSoporte', 
       required: true,
     },
-    autor: {
+    autor: { 
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Usuario', 
-      required: true,
-    },
-    rol: {
-      type: String,
-      enum: ['Administrador', 'Pasante', 'PersonalTICs'],
       required: true,
     },
     explicacion: {

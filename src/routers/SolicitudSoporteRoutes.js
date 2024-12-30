@@ -4,9 +4,10 @@ import {
   cambiarEstadoSolicitud,
   verHistorialSolicitudes,
   filtrarSolicitudes,
-  consultaTemporal
+  asignarSolicitud,
+  obtenerSolicitudesAsignadas
 } from '../controllers/ControladorSolicitudSoporte.js';
-import { body,validationResult } from 'express-validator';
+
 import { verificarToken } from '../middlewares/VerificarToken.js';
 import { verificarAdministrador, verificarRoles } from '../middlewares/VerificarRol.js';
 
@@ -20,12 +21,15 @@ router.post('/', verificarToken, crearSolicitudSoporte);
 router.patch(
   '/:id/estado',
   verificarToken,
-  verificarRoles(['Administrador', 'Personal TICs']),
+  verificarRoles(['Administrador', 'Personal TICs','Pasante']),
   cambiarEstadoSolicitud
 );
 router.get('/historial', verificarToken, verHistorialSolicitudes);
 router.get('/filtrar', verificarToken,verificarAdministrador, filtrarSolicitudes);
-router.get('/consulta', verificarToken,verificarAdministrador, consultaTemporal);
+router.post('/asignar', verificarToken,verificarAdministrador, asignarSolicitud);
+router.get('/asignadas', 
+  verificarToken,
+  verificarRoles(['Administrador', 'Personal TICs','Pasante']), obtenerSolicitudesAsignadas);
 
 
 export default router;

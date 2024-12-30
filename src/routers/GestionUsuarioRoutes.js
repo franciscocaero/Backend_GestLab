@@ -9,6 +9,7 @@ const router = express.Router();
 
 router.use(verificarToken, verificarAdministrador);
 
+
 router.post('/crear', verificarToken, crearUsuarios);
 router.delete('/eliminar/:id', eliminarUsuario);
 
