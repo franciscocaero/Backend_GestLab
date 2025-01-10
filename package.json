@@ -3,10 +3,26 @@
   "version": "1.0.0",
   "main": "index.js",
   "type": "module",
+  "jest": {
+  "transform": {
+      "^.+\\.js$": "babel-jest"
+    },
+    "transformIgnorePatterns": [
+      "/node_modules/(?!nombre-del-paquete-a-transformar)/"
+    ]
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest",
     "start": "node src/index.js",
     "dev": "node --watch src/index.js"
+  },
+  "ava": {
+    "files": [
+      "src/test/**/*"
+    ],
+    "nodeArguments": [
+      "--experimental-vm-modules"
+    ]
   },
   "author": "",
   "license": "ISC",
@@ -26,5 +42,20 @@
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
     "yamljs": "^0.3.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.26.0",
+    "@babel/preset-env": "^7.26.0",
+    "@babel/preset-typescript": "^7.26.0",
+    "@babel/register": "^7.25.9",
+    "ava": "^6.2.0",
+    "babel-jest": "^29.7.0",
+    "chai": "^5.1.2",
+    "chai-http": "^5.1.1",
+    "jest": "^29.7.0",
+    "mocha": "^11.0.1",
+    "sinon": "^19.0.2",
+    "sinon-chai": "^4.0.0",
+    "supertest": "^7.0.0"
   }
 }

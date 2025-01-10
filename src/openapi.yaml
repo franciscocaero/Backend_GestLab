@@ -183,7 +183,7 @@ paths:
         401:
           description: Código de verificación incorrecto.
 
-  /api/laboratorios:
+  /api/laboratorios/:
     post:
       summary: Crea un nuevo laboratorio.
       tags: [Laboratorios]
@@ -516,9 +516,9 @@ paths:
         500:
           description: Error al eliminar la nota.
 
-  /api/gestion/crear:
+  /api/gestion/crear-o-editar:
     post:
-      summary: Crea nuevos usuarios.
+      summary: Crea o actualiza un usuario.
       tags: [Usuarios]
       security:
         - BearerAuth: []
@@ -529,38 +529,58 @@ paths:
             schema:
               type: object
               properties:
-                usuarios:
-                  type: array
-                  items:
-                    $ref: '#/components/schemas/Usuario'
+                email:
+                  type: string
+                  format: email
+                  example: "usuario@ejemplo.com"
+                nombre:
+                  type: string
+                  example: "Juan"
+                apellido:
+                  type: string
+                  example: "Pérez"
+                password:
+                  type: string
+                  example: "juanperez123"
+                rol:
+                  type: string
+                  enum: ['Administrador', 'PersonalTICs', 'Docente', 'AyudanteServicios', 'Pasante']
+                  example: "Docente"
       responses:
         201:
-          description: Proceso de creación de usuarios completado.
+          description: Usuario creado exitosamente.
+        200:
+          description: Usuario actualizado exitosamente.
         400:
-          description: Lista de usuarios inválida.
+          description: Los campos email, nombre, apellido y rol son obligatorios o datos inválidos.
         500:
-          description: Error al crear usuarios.
+          description: Error al procesar la solicitud.
 
 
-  /api/gestion/eliminar/{id}:
-    parameters:
-      - name: id
-        in: path
-        required: true
-        description: ID del usuario a eliminar.
-        schema:
-          type: string
-
+  /api/gestion/eliminar:
     delete:
       summary: Elimina un usuario existente.
       tags: [Usuarios]
       security:
         - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: "usuario@ejemplo.com"
       responses:
         200:
           description: Usuario eliminado exitosamente.
+        400:
+          description: El campo email es obligatorio.
         404:
-          $ref: '#/components/responses/NotFound'
+          description: Usuario no encontrado.
         500:
           description: Error al eliminar usuario.
           
