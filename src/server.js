@@ -31,7 +31,7 @@ const swaggerDocument = YAML.load(path.join(__dirname, 'openapi.yaml'));
 
 
 app.get('/',(req,res)=>{
-    res.send("Server on")
+    res.send("Bienvenido a la aplicacion LabInsight. Servicio creado para la gestión de laboratorios y su soporte tecnico en la ESFOT.")
 })
 
 app.use('/api/usuarios', usuarioRoutes);
