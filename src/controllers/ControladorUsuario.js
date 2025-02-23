@@ -3,6 +3,11 @@ import Usuario from '../models/Usuario.js';
 import transporter from '../config/nodemailer.js'; 
 import crypto from 'crypto';
 
+const validarPassword = (password) => {
+  const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/;
+  return regex.test(password);
+};
+
 export const login = async (req, res) => {
   const { email, password } = req.body; 
 
@@ -80,30 +85,17 @@ export const solicitarCambioPassword = async (req, res) => {
 
 export const cambiarPassword = async (req, res) => {
   const { email, verificationCode, nuevaContraseña, confirmarContraseña } = req.body;
-
   try {
     const usuario = await Usuario.findOne({ email });
-
-    if (!usuario) {
-      return res.status(404).json({ message: 'Usuario no encontrado' });
-    }
-
-    if (verificationCodes[email] !== verificationCode) {
-      return res.status(401).json({ message: 'Código de verificación incorrecto' });
-    }
-    if (nuevaContraseña !== confirmarContraseña) {
-      return res.status(400).json({ message: 'Las contraseñas no coinciden' });
-    }
-
+    if (!usuario) return res.status(404).json({ message: 'Usuario no encontrado' });
+    if (verificationCodes[email] !== verificationCode) return res.status(401).json({ message: 'Código de verificación incorrecto' });
+    if (nuevaContraseña !== confirmarContraseña) return res.status(400).json({ message: 'Las contraseñas no coinciden' });
+    if (!validarPassword(nuevaContraseña)) return res.status(400).json({ message: 'La contraseña no cumple con los requisitos' });
+    
     usuario.password = nuevaContraseña;
     await usuario.save();
-
     delete verificationCodes[email];
-
-    res.json({
-      message: 'Contraseña actualizada exitosamente',
-      email: usuario.email,
-    });
+    res.json({ message: 'Contraseña actualizada exitosamente', email: usuario.email });
   } catch (error) {
     console.error('Error al cambiar contraseña:', error);
     res.status(500).json({ message: 'Error en el servidor' });
